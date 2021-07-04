@@ -103,7 +103,7 @@ stages:
       artifact: app
 
 # Dev release
-- stage: DEV-Stage
+- stage: DEV_Stage
   jobs:
   - job: Release
     pool:
@@ -142,7 +142,7 @@ stages:
         RenameFilesFlag: true
 
 #Staging release
-- stage: STG-Stage
+- stage: STG_Stage
   jobs:
   - job: Release
     pool:

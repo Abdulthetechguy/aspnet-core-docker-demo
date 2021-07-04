@@ -9,7 +9,7 @@ variables:
   acrName: 'capehakeemww0azacr'
   rgName: 'cape-rg'
   imageName: 'capehakeewmdocker'
-  webAppName: 'devdocker'
+  webAppName: 'devdocker1'
 
 stages:
 
@@ -18,7 +18,7 @@ stages:
   jobs:
   - job: BuildAndTest
     pool:
-      vmImage: 'Ubuntu-16.04'
+      vmImage: 'Ubuntu-latest'
     steps:
 
     # Create or update the ACR resource

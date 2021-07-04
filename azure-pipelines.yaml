@@ -9,9 +9,10 @@ variables:
   acrName: 'capehakeemww0azacr'
   rgName: 'cape-rg'
   imageName: 'capehakeewmdocker'
-  webAppName: 'capedockerdev'
-  webAppNamestg: 'capedockerstg'
-  webAppNameprd: 'capedockerprd'
+  webAppName: 'capedocker'
+  subscription: 'CAPESPN'
+  # webAppNamestg: 'capedockerstg'
+  # webAppNameprd: 'capedockerprd'
 
 stages:
 
@@ -27,7 +28,7 @@ stages:
     - task: AzureResourceGroupDeployment@2
       displayName: 'Azure Deployment:Create Azure Container Registry'
       inputs:
-        azureSubscription: 'CAPESPN'
+        azureSubscription: '$(subscription)'
         resourceGroupName: '$(rgName)'
         location: $(location)
         csmFile: '$(System.DefaultWorkingDirectory)/**/containerRegistry-template.json'
@@ -76,7 +77,7 @@ stages:
     - task: Docker@1
       displayName: 'Build container image'
       inputs:
-        azureSubscriptionEndpoint: 'CAPESPN'
+        azureSubscriptionEndpoint: '$(subscription)'
         azureContainerRegistry: '$(acrHostName)'
         imageName: '$(imageName):$(Build.BuildId)'
         useDefaultContext: false
@@ -86,7 +87,7 @@ stages:
     - task: Docker@1
       displayName: 'Push container image'
       inputs:
-        azureSubscriptionEndpoint: 'CAPESPN'
+        azureSubscriptionEndpoint: '$(subscription)'
         azureContainerRegistry: '$(acrHostName)'
         command: 'Push an image'
         imageName: '$(imageName):$(Build.BuildId)'
@@ -120,7 +121,7 @@ stages:
     - task: AzureResourceGroupDeployment@2
       displayName: 'Azure Deployment:Create Azure App Service'
       inputs:
-        azureSubscription: 'CAPESPN'
+        azureSubscription: '$(subscription)'
         resourceGroupName: '$(rgName)'
         location: '$(location)'
         csmFile: '$(Pipeline.Workspace)/**/container-webapp-template.json'
@@ -130,7 +131,7 @@ stages:
     - task: AzureRmWebAppDeployment@3
       displayName: 'Deploy Azure App Service'
       inputs:
-        azureSubscription: 'CAPESPN'
+        azureSubscription: '$(subscription)'
         appType: applinux
         WebAppName: "$(webAppName)-dev"
         DockerNamespace: $(acrHostName)
@@ -159,19 +160,58 @@ stages:
     - task: AzureResourceGroupDeployment@2
       displayName: 'Azure Deployment:Create Azure App Service'
       inputs:
-        azureSubscription: 'CAPESPN'
+        azureSubscription: '$(subscription)'
         resourceGroupName: '$(rgName)'
         location: '$(location)'
         csmFile: '$(Pipeline.Workspace)/**/container-webapp-template.json'
-        overrideParameters: '-webAppName "$(webAppNamestg)" -hostingPlanName $(webAppName) -appInsightsLocation "$(location)" -sku "S1 Standard" -registryName $(acrName) -registryLocation "$(location)" -registrySku standard -imageName $(imageName):$(Build.BuildId)'
+        overrideParameters: '-webAppName "$(webAppName)-stg" -hostingPlanName $(webAppName) -appInsightsLocation "$(location)" -sku "S1 Standard" -registryName $(acrName) -registryLocation "$(location)" -registrySku standard -imageName $(imageName):$(Build.BuildId)'
 
     # Deploy App Service
     - task: AzureRmWebAppDeployment@3
       displayName: 'Deploy Azure App Service'
       inputs:
-        azureSubscription: 'CAPESPN'
+        azureSubscription: '$(subscription)'
         appType: applinux
-        WebAppName: $(webAppNamestg)
+        WebAppName: "$(webAppName)-stg"
+        DockerNamespace: $(acrHostName)
+        DockerRepository: $(webAppName)
+        DockerImageTag: '$(Build.BuildId)'
+        WebAppUri: webAppUrl
+        TakeAppOfflineFlag: true
+        UseWebDeploy: true
+        RenameFilesFlag: true
+
+#Staging release
+- stage: PRD_Stage
+  jobs:
+  - job: Release
+    pool:
+      vmImage: 'Ubuntu-latest'
+    steps:
+    # Don't clone the repo
+    - checkout: none
+
+    # Download the published application artifact
+    - download: current
+      artifact: app
+
+    # Create or update Azure App Service
+    - task: AzureResourceGroupDeployment@2
+      displayName: 'Azure Deployment:Create Azure App Service'
+      inputs:
+        azureSubscription: '$(subscription)'
+        resourceGroupName: '$(rgName)'
+        location: '$(location)'
+        csmFile: '$(Pipeline.Workspace)/**/container-webapp-template.json'
+        overrideParameters: '-webAppName "$(webAppName)-prd" -hostingPlanName $(webAppName) -appInsightsLocation "$(location)" -sku "S1 Standard" -registryName $(acrName) -registryLocation "$(location)" -registrySku standard -imageName $(imageName):$(Build.BuildId)'
+
+    # Deploy App Service
+    - task: AzureRmWebAppDeployment@3
+      displayName: 'Deploy Azure App Service'
+      inputs:
+        azureSubscription: '$(subscription)'
+        appType: applinux
+        WebAppName: "$(webAppName)-prd"
         DockerNamespace: $(acrHostName)
         DockerRepository: $(webAppName)
         DockerImageTag: '$(Build.BuildId)'

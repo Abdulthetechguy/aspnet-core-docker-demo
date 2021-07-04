@@ -9,7 +9,9 @@ variables:
   acrName: 'capehakeemww0azacr'
   rgName: 'cape-rg'
   imageName: 'capehakeewmdocker'
-  webAppName: 'capedocker'
+  webAppName: 'capedockerdev'
+  webAppNamestg: 'capedockerstg'
+  webAppNameprd: 'capedockerprd'
 
 stages:
 
@@ -105,7 +107,7 @@ stages:
   jobs:
   - job: Release
     pool:
-      vmImage: 'Ubuntu-16.04'
+      vmImage: 'Ubuntu-latest'
     steps:
     # Don't clone the repo
     - checkout: none
@@ -144,7 +146,7 @@ stages:
   jobs:
   - job: Release
     pool:
-      vmImage: 'Ubuntu-16.04'
+      vmImage: 'Ubuntu-latest'
     steps:
     # Don't clone the repo
     - checkout: none
@@ -161,7 +163,7 @@ stages:
         resourceGroupName: '$(rgName)'
         location: '$(location)'
         csmFile: '$(Pipeline.Workspace)/**/container-webapp-template.json'
-        overrideParameters: '-webAppName "$(webAppName)-stg" -hostingPlanName $(webAppName) -appInsightsLocation "$(location)" -sku "S1 Standard" -registryName $(acrName) -registryLocation "$(location)" -registrySku standard -imageName $(imageName):$(Build.BuildId)'
+        overrideParameters: '-webAppName "$(webAppNamestg)" -hostingPlanName $(webAppName) -appInsightsLocation "$(location)" -sku "S1 Standard" -registryName $(acrName) -registryLocation "$(location)" -registrySku standard -imageName $(imageName):$(Build.BuildId)'
 
     # Deploy App Service
     - task: AzureRmWebAppDeployment@3
@@ -169,7 +171,7 @@ stages:
       inputs:
         azureSubscription: 'CAPESPN'
         appType: applinux
-        WebAppName: "$(webAppName)-stg"
+        WebAppName: $(webAppNamestg)
         DockerNamespace: $(acrHostName)
         DockerRepository: $(webAppName)
         DockerImageTag: '$(Build.BuildId)'

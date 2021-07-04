@@ -181,7 +181,7 @@ stages:
         UseWebDeploy: true
         RenameFilesFlag: true
 
-#Staging release
+#PRD release
 - stage: PRD_Stage
   jobs:
   - job: Release
@@ -219,3 +219,23 @@ stages:
         TakeAppOfflineFlag: true
         UseWebDeploy: true
         RenameFilesFlag: true
+
+
+#Destroy Function
+- stage: Destroy_Infrastructure
+  jobs:
+  - job: Release
+    pool:
+      vmImage: 'Ubuntu-latest'
+    steps:
+    # Don't clone the repo
+    - checkout: none
+  
+
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: 'CAPESPN'
+        scriptType: 'pscore'
+        scriptLocation: 'inlineScript'
+        inlineScript: 'az group delete --name $(rgName)'
+        powerShellErrorActionPreference: 'silentlyContinue'

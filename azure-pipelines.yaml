@@ -7,7 +7,7 @@ variables:
   location: 'West US 2'
   acrHostName: 'capehakeem1.azurecr.io'
   acrName: 'capehakeem0azacr'
-  rgName: 'capehakeem-rg'
+  rgName: 'cape-rg'
   imageName: 'capehakeemdocker'
   webAppName: 'devdocker'
 
@@ -25,7 +25,7 @@ stages:
     - task: AzureResourceGroupDeployment@2
       displayName: 'Azure Deployment:Create Azure Container Registry'
       inputs:
-        azureSubscription: 'ADOSC'
+        azureSubscription: 'CAPESPN'
         resourceGroupName: '$(rgName)'
         location: $(location)
         csmFile: '$(System.DefaultWorkingDirectory)/**/containerRegistry-template.json'
@@ -74,7 +74,7 @@ stages:
     - task: Docker@1
       displayName: 'Build container image'
       inputs:
-        azureSubscriptionEndpoint: 'ADOSC'
+        azureSubscriptionEndpoint: 'CAPESPN'
         azureContainerRegistry: '$(acrHostName)'
         imageName: '$(imageName):$(Build.BuildId)'
         useDefaultContext: false
@@ -84,7 +84,7 @@ stages:
     - task: Docker@1
       displayName: 'Push container image'
       inputs:
-        azureSubscriptionEndpoint: 'ADOSC'
+        azureSubscriptionEndpoint: 'CAPESPN'
         azureContainerRegistry: '$(acrHostName)'
         command: 'Push an image'
         imageName: '$(imageName):$(Build.BuildId)'
@@ -118,7 +118,7 @@ stages:
     - task: AzureResourceGroupDeployment@2
       displayName: 'Azure Deployment:Create Azure App Service'
       inputs:
-        azureSubscription: 'ADOSC'
+        azureSubscription: 'CAPESPN'
         resourceGroupName: '$(rgName)'
         location: '$(location)'
         csmFile: '$(Pipeline.Workspace)/**/container-webapp-template.json'
@@ -128,7 +128,7 @@ stages:
     - task: AzureRmWebAppDeployment@3
       displayName: 'Deploy Azure App Service'
       inputs:
-        azureSubscription: 'ADOSC'
+        azureSubscription: 'CAPESPN'
         appType: applinux
         WebAppName: $(webAppName)
         DockerNamespace: $(acrHostName)

@@ -5,11 +5,11 @@ trigger:
 variables:
   buildConfiguration: 'Release'
   location: 'West US 2'
-  acrHostName: 'cswebappdockeraz4acr.azurecr.io'
-  acrName: 'cswebappdocker0azacr'
-  rgName: 'cswebappdocker0az-rg'
-  imageName: 'cswebappdockeraz4'
-  webAppName: 'cswebappdockeraz4'
+  acrHostName: 'capehakeem1.azurecr.io'
+  acrName: 'capehakeem0azacr'
+  rgName: 'capehakeem-rg'
+  imageName: 'capehakeemdocker'
+  webAppName: 'devdocker'
 
 stages:
 

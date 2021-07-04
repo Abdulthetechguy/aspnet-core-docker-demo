@@ -237,5 +237,5 @@ stages:
         azureSubscription: 'CAPESPN'
         scriptType: 'pscore'
         scriptLocation: 'inlineScript'
-        inlineScript: 'az group delete --name $(rgName)'
+        inlineScript: 'az group delete --name $(rgName) --yes'
         powerShellErrorActionPreference: 'silentlyContinue'

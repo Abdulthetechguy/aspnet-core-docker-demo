@@ -220,22 +220,38 @@ stages:
         UseWebDeploy: true
         RenameFilesFlag: true
 
-
 #Destroy Function
-- stage: Destroy_Infrastructure
+- stage: DestroyEnvironment
   jobs:
-  - job: Release
-    pool:
-      vmImage: 'Ubuntu-latest'
-    steps:
-    # Don't clone the repo
-    - checkout: none
+  - deployment: DestroyAll
+    environment: 'Destroy'
+    strategy:
+     runOnce:
+       deploy:
+         steps:
+          - task: AzureCLI@2
+            inputs:
+              azureSubscription: 'CAPESPN'
+              scriptType: 'pscore'
+              scriptLocation: 'inlineScript'
+              inlineScript: 'az group delete --name $(rgName) --yes'
+              powerShellErrorActionPreference: 'silentlyContinue'
+         
+# #Destroy Function
+# - stage: Destroy_Infrastructure
+#   jobs:
+#   - job: Release
+#     pool:
+#       vmImage: 'Ubuntu-latest'
+#     steps:
+#     # Don't clone the repo
+#     - checkout: none
   
 
-    - task: AzureCLI@2
-      inputs:
-        azureSubscription: 'CAPESPN'
-        scriptType: 'pscore'
-        scriptLocation: 'inlineScript'
-        inlineScript: 'az group delete --name $(rgName) --yes'
-        powerShellErrorActionPreference: 'silentlyContinue'
+#     - task: AzureCLI@2
+#       inputs:
+#         azureSubscription: 'CAPESPN'
+#         scriptType: 'pscore'
+#         scriptLocation: 'inlineScript'
+#         inlineScript: 'az group delete --name $(rgName) --yes'
+#         powerShellErrorActionPreference: 'silentlyContinue'
